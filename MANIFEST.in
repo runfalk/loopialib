@@ -1,0 +1,1 @@
+include LICENSE requirements.txt test_loopialib.py
