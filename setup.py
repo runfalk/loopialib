@@ -8,7 +8,7 @@ from setuptools import setup
 with open("README.rst") as fp:
     long_desc = fp.read()
 
-with open("loopialib.py") as fp:
+with open("loopialib/__init__.py") as fp:
     version = re.search('__version__\s+=\s+"([^"]+)', fp.read()).group(1)
 
 if __name__ == "__main__":
