@@ -167,6 +167,29 @@ def test_loopia_construct():
     assert loopia.password == "password"
 
 
+def test_get_subdomains(loopia):
+    @loopia.intercept("getSubdomains")
+    def get_subdomains(user, password, domain):
+        assert domain == "foo.bar"
+        return ["www", "mail"]
+
+    assert not get_subdomains.called
+    assert loopia.get_subdomains("foo.bar") == ["www", "mail"]
+    assert get_subdomains.called
+
+
+def test_remove_subdomain(loopia):
+    @loopia.intercept("removeSubdomain")
+    def remove_subdomain(user, password, domain, subdomain):
+        assert domain == "foo.bar"
+        assert subdomain == "@"
+        return ["OK"]
+
+    assert not remove_subdomain.called
+    loopia.remove_subdomain("foo.bar", subdomain=None)
+    assert remove_subdomain.called
+
+
 def test_loopia_get_zone_records(loopia, record_obj, record):
     @loopia.intercept("getZoneRecords")
     def get_zone_records(user, password, domain, subdomain):
