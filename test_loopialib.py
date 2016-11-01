@@ -169,43 +169,43 @@ def test_loopia_construct():
 
 def test_loopia_get_zone_records(loopia, record_obj, record):
     @loopia.intercept("getZoneRecords")
-    def get_zone_records(user, password, domain, sub_domain):
+    def get_zone_records(user, password, domain, subdomain):
         assert user == loopia.user
         assert password == loopia.password
         assert domain == "foo.bar"
-        assert sub_domain == "@"
+        assert subdomain == "@"
 
         return [record_obj]
 
     assert not get_zone_records.called
-    assert loopia.get_zone_records("foo.bar", sub_domain=None) == [record]
+    assert loopia.get_zone_records("foo.bar", subdomain=None) == [record]
     assert get_zone_records.called
 
 
 def test_loopia_get_zone_records_wrong_domain(loopia):
     @loopia.intercept("getZoneRecords")
-    def get_zone_records(user, password, domain, sub_domain):
+    def get_zone_records(user, password, domain, subdomain):
         assert domain == "foo.bar"
-        assert sub_domain == "@"
+        assert subdomain == "@"
 
         return ["UNKNOWN_ERROR"]
 
     with pytest.raises(LoopiaError):
-        loopia.get_zone_records("foo.bar", sub_domain=None)
+        loopia.get_zone_records("foo.bar", subdomain=None)
 
 
 def test_update_zone_record(loopia, record_obj, record):
     @loopia.intercept("updateZoneRecord")
-    def update_zone_record(user, password, domain, sub_domain, r_obj):
+    def update_zone_record(user, password, domain, subdomain, r_obj):
         assert user == loopia.user
         assert password == loopia.password
         assert domain == "foo.bar"
-        assert sub_domain == "@"
+        assert subdomain == "@"
         assert r_obj == record_obj
 
         return ["OK"]
 
     assert not update_zone_record.called
-    loopia.update_zone_record(record, "foo.bar", sub_domain=None)
+    loopia.update_zone_record(record, "foo.bar", subdomain=None)
     assert update_zone_record.called
 
