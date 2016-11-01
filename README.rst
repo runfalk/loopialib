@@ -23,6 +23,6 @@ Changelog
 
 Version 0.1.0
 ~~~~~~~~~~~~~
-Released ...
+Released 2nd November 2016
 
 - Initial release
