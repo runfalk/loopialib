@@ -1,5 +1,5 @@
 from .exceptions import LoopiaError
-from .types import DnsRecord
+from .types import DnsRecord, _validate_int
 
 try:
     # Python 2
@@ -74,6 +74,8 @@ class Loopia(object):
 
         if subdomain is None:
             subdomain = "@"
+
+        _validate_int("id", id)
 
         self._call("removeZoneRecord", domain, subdomain, id)
 

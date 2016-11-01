@@ -209,3 +209,44 @@ def test_update_zone_record(loopia, record_obj, record):
     loopia.update_zone_record(record, "foo.bar", subdomain=None)
     assert update_zone_record.called
 
+
+def test_add_zone_record(loopia, record_obj, record):
+    @loopia.intercept("addZoneRecord")
+    def add_zone_record(user, password, domain, subdomain, r_obj):
+        assert user == loopia.user
+        assert password == loopia.password
+        assert domain == "foo.bar"
+        assert subdomain == "@"
+        assert r_obj == record.replace(id=0).to_dict()
+
+        return ["OK"]
+
+    assert not add_zone_record.called
+    loopia.add_zone_record(record.replace(id=0), "foo.bar", subdomain=None)
+    assert add_zone_record.called
+
+
+def test_add_zone_record_with_id(loopia, record):
+    with pytest.raises(ValueError):
+        loopia.add_zone_record(record, "foo.bar", subdomain=None)
+
+
+def test_remove_zone_record(loopia, record):
+    @loopia.intercept("removeZoneRecord")
+    def remove_zone_record(user, password, domain, subdomain, id):
+        assert user == loopia.user
+        assert password == loopia.password
+        assert domain == "foo.bar"
+        assert subdomain == "@"
+        assert record.id == id
+
+        return ["OK"]
+
+    assert not remove_zone_record.called
+    loopia.remove_zone_record(record.id, "foo.bar", subdomain=None)
+    assert remove_zone_record.called
+
+
+def test_remove_zone_record_no_int(loopia, record):
+    with pytest.raises(TypeError):
+        loopia.remove_zone_record("id", "foo.bar", subdomain=None)
