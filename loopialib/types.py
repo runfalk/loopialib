@@ -28,10 +28,22 @@ def _validate_record_type(type):
 
 _DnsRecord = namedtuple("_DnsRecord", ["type", "ttl", "priority", "data", "id"])
 class DnsRecord(_DnsRecord):
-    def __new__(cls, type, ttl, priority, data, id):
+    def __new__(cls, type, ttl=None, priority=None, data=None, id=None):
         _validate_record_type(type)
+
+        if ttl is None:
+            ttl = 3600
         _validate_int("ttl", ttl)
+
+        if priority is None:
+            priority = 0
         _validate_int("priority", priority)
+
+        if data is None:
+            data = ""
+
+        if id is None:
+            id = 0
         _validate_int("id", id)
 
         return super(DnsRecord, cls).__new__(cls, type, ttl, priority, data, id)

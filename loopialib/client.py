@@ -32,20 +32,50 @@ class Loopia(object):
             raise LoopiaError.from_code(response[0], response)
         return response
 
-    def get_zone_records(self, domain, sub_domain=None):
-        if sub_domain is None:
-            sub_domain = "@"
+    def get_subdomains(self, domain):
+        return self._call("getSubdomains", domain)
+
+    def remove_subdomain(self, domain, subdomain=None):
+        if subdomain is None:
+            subdomain = "@"
+
+        return self._call("removeSubdomain", domain, subdomain)
+
+    def add_zone_record(self, record, domain, subdomain=None):
+        if subdomain is None:
+            subdomain = "@"
+
+        if record.id != 0:
+            raise ValueError("Record must not have an ID")
+
+        self._call("addZoneRecord", domain, subdomain, record.to_dict())
+
+    def get_zone_records(self, domain, subdomain=None):
+        if subdomain is None:
+            subdomain = "@"
 
         return [
             DnsRecord.from_dict(record)
-            for record in self._call("getZoneRecords", domain, sub_domain)
+            for record in self._call("getZoneRecords", domain, subdomain)
         ]
 
-    def update_zone_record(self, record, domain, sub_domain=None):
-        if sub_domain is None:
-            sub_domain = "@"
+    def update_zone_record(self, record, domain, subdomain=None):
+        if subdomain is None:
+            subdomain = "@"
 
-        self._call("updateZoneRecord", domain, sub_domain, record.to_dict())
+        self._call("updateZoneRecord", domain, subdomain, record.to_dict())
+
+    def remove_zone_record(self, id, domain, subdomain=None):
+        """
+        Remove the zone record with the given ID that belongs to the given
+        domain and sub domain. If no sub domain is given the wildcard sub-domain
+        is assumed.
+        """
+
+        if subdomain is None:
+            subdomain = "@"
+
+        self._call("removeZoneRecord", domain, subdomain, id)
 
 
 class LoopiaTest(Loopia):

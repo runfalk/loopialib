@@ -21,7 +21,7 @@ if __name__ == "__main__":
         author="Andreas Runfalk",
         author_email="andreas@runfalk.se",
         url="https://www.github.com/runfalk/loopialib",
-        py_modules=["loopialib"],
+        packages=["loopialib"],
         install_requires=[],
         extras_require={
             "dev": [
