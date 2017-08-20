@@ -45,7 +45,7 @@ class DomainOccupiedError(LoopiaError):
 @LoopiaError.register
 class RateLimitedError(LoopiaError):
     code = "RATE_LIMITED"
-    message = u"Maximum number of reguests over time reached"
+    message = u"Maximum number of requests over time reached"
 
 
 @LoopiaError.register

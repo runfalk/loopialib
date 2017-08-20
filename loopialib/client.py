@@ -1,19 +1,25 @@
+from ._compat import ServerProxy, string_types
 from .exceptions import LoopiaError
-from .types import DnsRecord, _validate_int
+from .types import DnsRecord, Domain, _validate_int
 
-try:
-    # Python 2
-    from xmlrpclib import ServerProxy
-except ImportError:
-    # Python 3
-    from xmlrpc.client import ServerProxy
 
-try:
-    # Python 2
-    string_types = basestring
-except NameError:
-    # Python 3
-    string_types = (str, bytes)
+def _parse_status_code(response):
+    """
+    Return error string code if the response is an error, otherwise ``"OK"``
+    """
+
+    # This happens when a status response is expected
+    if isinstance(response, string_types):
+        return response
+
+    # This happens when a list of structs are expected
+    is_single_list = isinstance(response, list) and len(response) == 1
+    if is_single_list and isinstance(response[0], string_types):
+        return response[0]
+
+    # This happens when a struct of any kind is returned
+    return "OK"
+
 
 class Loopia(object):
     base_url = "https://api.loopia.se/RPCSERV"
@@ -26,11 +32,37 @@ class Loopia(object):
 
     def _call(self, method, *args):
         response = getattr(self._client, method)(self.user, self.password, *args)
-        if len(response) == 1 and isinstance(response[0], string_types):
-            if response[0] == "OK":
-                return True
-            raise LoopiaError.from_code(response[0], response)
-        return response
+
+        # Check if there was an error with the request
+        status = _parse_status_code(response)
+        if status != "OK":
+            raise LoopiaError.from_code(status)
+
+        # If it's not a string and not an error we want to return the value
+        if not isinstance(response, string_types):
+            return response
+
+    def get_domain(self, domain):
+        """
+        Return information about the given domain name.
+
+        :param domain: Domain name to return information about
+        :return: A ``Domain`` ``namedtuple``
+        """
+
+        return Domain.from_dict(self._call("getDomain", domain))
+
+    def get_domains(self):
+        """
+        Return a list of all domains belonging to this account.
+
+        :return: A ``list`` of ``Domain`` ``namedtuple``
+        """
+
+        return [
+            Domain.from_dict(domain)
+            for domain in self._call("getDomains")
+        ]
 
     def get_subdomains(self, domain):
         return self._call("getSubdomains", domain)

@@ -1,15 +1,33 @@
 from collections import namedtuple
+from datetime import date, datetime
+
+from ._compat import string_types, ustr
+
 
 __all__ = [
     "DnsRecord",
+    "Domain",
 ]
 
-def _validate_int(name, value):
-    if type(value) is not int:
-        raise TypeError("Expected '{name}' to be 'int', got '{value}'".format(
-            name=name,
-            value=type(value).__name__))
 
+_type = type
+def _validate_type(name, value, type, exact_type=False):
+    if exact_type:
+        match = _type(value) is type
+    else:
+        match = isinstance(value, type)
+
+    if not match:
+        msg = "Expected '{name}' to be of type '{type}', got '{value}'"
+        raise TypeError(msg.format(
+            name=name,
+            type=type.__name__,
+            value=_type(value).__name__
+        ))
+
+
+def _validate_int(name, value):
+    _validate_type(name, value, type=int, exact_type=True)
     if value < 0:
         raise ValueError("'{name}' must not be less than 0".format(name=name))
 
@@ -81,4 +99,51 @@ class DnsRecord(_DnsRecord):
             "record_id": self.id,
         }
 
+
+_Domain = namedtuple("_Domain", [
+    "domain",
+    "expiration_date",
+    "auto_renew",
+    "registered",
+    "paid",
+    "invoice_number",
+])
+class Domain(_Domain):
+    __slots__ = ()
+
+    def __new__(
+            cls, domain, expiration_date, auto_renew, registered, paid,
+            invoice_number=None):
+        _validate_type("domain", domain, type=string_types)
+        _validate_type(
+            "expiration_date", expiration_date, type=date, exact_type=True)
+        if auto_renew is not None:
+            _validate_type("auto_renew", auto_renew, type=bool)
+        _validate_type("registered", registered, type=bool)
+        _validate_type("paid", paid, type=bool)
+        _validate_int("invoice_number", invoice_number)
+
+        return super(Domain, cls).__new__(
+            cls, domain, expiration_date, auto_renew, registered, paid,
+            invoice_number)
+
+    def __repr__(self):
+        return super(Domain, self).__repr__().lstrip("_")
+
+    @classmethod
+    def from_dict(cls, record):
+        return cls(
+            domain=record["domain"],
+            expiration_date=datetime.strptime(
+                record["expiration_date"], "%Y-%m-%d").date(),
+            # NOT_HANDLED_BY_LOOPIA is possible but handled as None since
+            # the status is unknown
+            auto_renew={
+                "NORMAL": True,
+                "DEACTIVATED": False,
+            }.get(record["renewal_status"]),
+            registered=bool(record["registered"]),
+            paid=bool(record["paid"]),
+            invoice_number=record["reference_no"],
+        )
 
