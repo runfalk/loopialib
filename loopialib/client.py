@@ -22,10 +22,10 @@ def _parse_status_code(response):
 
 
 class Loopia(object):
-    base_url = "https://api.loopia.se/RPCSERV"
     encoding = "utf-8"
 
-    def __init__(self, user, password):
+    def __init__(self, user, password, domain = 'se'):
+        self.base_url = f"https://api.loopia.{domain}/RPCSERV"
         self.user = user
         self.password = password
         self._client = ServerProxy(self.base_url, encoding=self.encoding)
