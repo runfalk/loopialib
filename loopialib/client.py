@@ -110,7 +110,3 @@ class Loopia(object):
         _validate_int("id", id)
 
         self._call("removeZoneRecord", domain, subdomain, id)
-
-
-class LoopiaTest(Loopia):
-    base_url = "https://test-api.loopia.se/RPCSERV"

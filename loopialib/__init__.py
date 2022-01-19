@@ -1,4 +1,4 @@
-from .client import Loopia, LoopiaTest
+from .client import Loopia
 from .exceptions import LoopiaError
 from .types import DnsRecord
 from .utils import split_domain
